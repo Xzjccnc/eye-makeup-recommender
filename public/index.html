@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 眼妆推荐 · 美图智能试妆</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">✦</span>
+        <div>
+          <h1>AI 眼妆推荐</h1>
+          <p>美图 AI 开放平台 · 智能面部分析</p>
+        </div>
+      </div>
+      <div class="header-badge" id="modeBadge">演示模式</div>
+    </header>
+
+    <main class="main">
+      <!-- 上传区 -->
+      <section class="upload-section" id="uploadSection">
+        <div class="upload-card" id="dropZone">
+          <input type="file" id="fileInput" accept="image/jpeg,image/png" hidden />
+          <div class="upload-icon">📷</div>
+          <h2>上传自拍，获取专属眼妆推荐</h2>
+          <p>支持 JPG / PNG，建议正脸清晰照片，大小不超过 5MB</p>
+          <button class="btn-primary" id="selectBtn">选择照片</button>
+          <p class="upload-hint">或拖拽图片到此处</p>
+        </div>
+        <div class="api-tags">
+          <span>人脸属性 v4</span>
+          <span>关键点检测</span>
+          <span>微观人脸分析</span>
+          <span>皮肤分割</span>
+          <span>人像抠图</span>
+        </div>
+      </section>
+
+      <!-- 分析中 -->
+      <section class="loading-section hidden" id="loadingSection">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">AI 正在分析您的面部特征…</p>
+        <div class="loading-steps">
+          <span class="step active" data-step="0">人脸检测</span>
+          <span class="step" data-step="1">五官分析</span>
+          <span class="step" data-step="2">肤色识别</span>
+          <span class="step" data-step="3">眼妆匹配</span>
+        </div>
+      </section>
+
+      <!-- 结果区 -->
+      <section class="result-section hidden" id="resultSection">
+        <div class="result-grid">
+          <!-- 左侧：预览 + 试妆 -->
+          <div class="preview-panel">
+            <p class="preview-label">试妆效果预览</p>
+            <div class="canvas-wrap">
+              <canvas id="previewCanvas"></canvas>
+            </div>
+            <p class="preview-hint">点击右侧推荐款式可切换试妆效果，拖动滑块调节妆感强度</p>
+            <div class="intensity-control">
+              <label>妆感强度</label>
+              <input type="range" id="intensitySlider" min="0" max="100" value="50" />
+              <span id="intensityValue">50%</span>
+            </div>
+            <button class="btn-secondary" id="resetBtn">重新上传</button>
+          </div>
+
+          <!-- 右侧：分析 + 推荐 -->
+          <div class="info-panel">
+            <div class="card highlight-card" id="highlightCard">
+              <div class="highlight-title" id="highlightTitle"></div>
+              <div class="highlight-sub" id="highlightSub"></div>
+            </div>
+
+            <div class="card analysis-card">
+              <h3>面部分析报告</h3>
+              <div class="summary-grid" id="summaryGrid"></div>
+            </div>
+
+            <div class="card tips-card">
+              <h3>专属化妆建议</h3>
+              <ul id="tipsList"></ul>
+            </div>
+
+            <div class="card recommend-card">
+              <h3>眼妆推荐 <span class="subtitle">按匹配度排序</span></h3>
+              <div class="makeup-list" id="makeupList"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Powered by <a href="https://ai.meitu.com/doc" target="_blank" rel="noopener">美图 AI 开放平台</a></p>
+    </footer>
+  </div>
+
+  <script src="/js/image-analyzer.js"></script>
+  <script src="/js/makeup-renderer.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "eye-makeup-recommender",
+  "version": "1.0.0",
+  "description": "AI 眼妆推荐 Web 应用 - 接入美图 AI 开放平台",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
