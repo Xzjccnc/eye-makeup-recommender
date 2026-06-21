@@ -7,11 +7,8 @@ const dropZone = $('#dropZone');
 const fileInput = $('#fileInput');
 const selectBtn = $('#selectBtn');
 const previewCanvas = $('#previewCanvas');
-const summaryGrid = $('#summaryGrid');
+const analysisTableWrap = $('#analysisTableWrap');
 const tipsList = $('#tipsList');
-const makeupList = $('#makeupList');
-const intensitySlider = $('#intensitySlider');
-const intensityValue = $('#intensityValue');
 const resetBtn = $('#resetBtn');
 const modeBadge = $('#modeBadge');
 const highlightTitle = $('#highlightTitle');
@@ -19,8 +16,6 @@ const highlightSub = $('#highlightSub');
 
 const renderer = new MakeupRenderer(previewCanvas);
 let currentData = null;
-let selectedStyle = null;
-let previewMap = {};
 
 async function init() {
   try {
@@ -57,12 +52,6 @@ async function init() {
     if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
   });
 
-  intensitySlider.addEventListener('input', () => {
-    const v = intensitySlider.value / 100;
-    intensityValue.textContent = `${intensitySlider.value}%`;
-    renderer.setIntensity(v);
-  });
-
   resetBtn.addEventListener('click', reset);
 
   window.addEventListener('resize', () => {
@@ -92,7 +81,6 @@ async function handleFile(file) {
 
     currentData = data;
 
-    // 先显示结果页，确保 canvas 容器有宽度
     showSection('result');
     await nextFrame();
 
@@ -102,20 +90,11 @@ async function handleFile(file) {
     const landmarks = data.faceInfo?.landmarks || [];
     const faceRect = data.faceInfo?.faceRect || clientFeatures.faceRect;
     renderer.setLandmarks(landmarks, faceRect);
-
-    // 先生成各款眼妆试妆缩略图
-    previewMap = await renderer.generatePreviews(data.recommendations || []);
+    renderer.render();
 
     renderHighlight(data.analysisHighlight);
-    renderSummary(data.summary);
+    renderAnalysisTable(data.analysisTable);
     renderTips(data.tips);
-    renderMakeupList(data.recommendations);
-
-    if (data.recommendations?.length) {
-      selectMakeup(data.recommendations[0]);
-    } else {
-      renderer.render();
-    }
   } catch (err) {
     alert(err.message);
     showSection('upload');
@@ -156,66 +135,37 @@ function animateSteps() {
   }, 500);
 }
 
-function renderSummary(summary) {
-  summaryGrid.innerHTML = Object.entries(summary)
-    .map(
-      ([label, value]) => `
-      <div class="summary-item">
-        <div class="label">${label}</div>
-        <div class="value">${value}</div>
-      </div>`,
-    )
-    .join('');
+function renderAnalysisTable(rows) {
+  if (!rows?.length) {
+    analysisTableWrap.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem">暂无数据</p>';
+    return;
+  }
+  analysisTableWrap.innerHTML = `
+    <table class="analysis-table">
+      <thead>
+        <tr>
+          <th>代码输入字段</th>
+          <th>原始数据</th>
+          <th>imageFeatures 存储值</th>
+          <th>报告字段</th>
+          <th>报告值</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => `
+          <tr>
+            <td class="col-field"><code>${row.inputField}</code></td>
+            <td class="col-measure">${row.rawValue ?? '-'}</td>
+            <td class="col-raw">${row.inputValue}</td>
+            <td class="col-label">${row.reportLabel}</td>
+            <td class="col-value">${row.reportValue}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 
 function renderTips(tips) {
   tipsList.innerHTML = (tips || []).map((t) => `<li>${t}</li>`).join('');
-}
-
-function renderMakeupList(items) {
-  makeupList.innerHTML = items
-    .map((m, idx) => {
-      const thumb = previewMap[m.id]
-        ? `<img class="makeup-thumb" src="${previewMap[m.id]}" alt="${m.name}试妆效果" />`
-        : `<div class="makeup-colors">${(m.colors?.shadow || []).slice(0, 3).map((c) => `<div class="color-dot" style="background:${c}"></div>`).join('')}</div>`;
-
-      return `
-    <div class="makeup-item${idx === 0 ? ' active' : ''}" data-id="${m.id}">
-      ${thumb}
-      <div class="makeup-info">
-        <div class="name-row">
-          <span class="name">${m.name}</span>
-          <span class="tag">${m.tag}</span>
-          ${idx === 0 ? '<span class="tag tag-top">首推</span>' : ''}
-        </div>
-        <div class="desc">${m.description}</div>
-        <div class="reason">${m.reason}</div>
-      </div>
-      <div class="makeup-score">
-        <div class="score">${m.matchScore}</div>
-        <div class="label">匹配度</div>
-      </div>
-    </div>`;
-    })
-    .join('');
-
-  makeupList.querySelectorAll('.makeup-item').forEach((el) => {
-    el.addEventListener('click', () => {
-      const item = items.find((m) => m.id === el.dataset.id);
-      if (item) selectMakeup(item);
-    });
-  });
-}
-
-function selectMakeup(style) {
-  selectedStyle = style;
-  makeupList.querySelectorAll('.makeup-item').forEach((el) => {
-    el.classList.toggle('active', el.dataset.id === style.id);
-  });
-  intensitySlider.value = Math.round((style.intensity || 0.5) * 100);
-  intensityValue.textContent = `${intensitySlider.value}%`;
-  renderer.setIntensity(intensitySlider.value / 100);
-  renderer.setStyle(style);
 }
 
 function showSection(name) {
@@ -226,8 +176,6 @@ function showSection(name) {
 
 function reset() {
   currentData = null;
-  selectedStyle = null;
-  previewMap = {};
   fileInput.value = '';
   showSection('upload');
 }

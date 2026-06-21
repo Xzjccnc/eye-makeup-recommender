@@ -55,44 +55,33 @@
 
       <!-- 结果区 -->
       <section class="result-section hidden" id="resultSection">
-        <div class="result-grid">
-          <!-- 左侧：预览 + 试妆 -->
+        <!-- 上半：预览 + 亮点 + 建议 -->
+        <div class="result-top-grid">
           <div class="preview-panel">
-            <p class="preview-label">试妆效果预览</p>
+            <p class="preview-label">面部识别预览</p>
             <div class="canvas-wrap">
               <canvas id="previewCanvas"></canvas>
-            </div>
-            <p class="preview-hint">点击右侧推荐款式可切换试妆效果，拖动滑块调节妆感强度</p>
-            <div class="intensity-control">
-              <label>妆感强度</label>
-              <input type="range" id="intensitySlider" min="0" max="100" value="50" />
-              <span id="intensityValue">50%</span>
             </div>
             <button class="btn-secondary" id="resetBtn">重新上传</button>
           </div>
 
-          <!-- 右侧：分析 + 推荐 -->
           <div class="info-panel">
             <div class="card highlight-card" id="highlightCard">
               <div class="highlight-title" id="highlightTitle"></div>
               <div class="highlight-sub" id="highlightSub"></div>
             </div>
 
-            <div class="card analysis-card">
-              <h3>面部分析报告</h3>
-              <div class="summary-grid" id="summaryGrid"></div>
-            </div>
-
             <div class="card tips-card">
               <h3>专属化妆建议</h3>
               <ul id="tipsList"></ul>
             </div>
-
-            <div class="card recommend-card">
-              <h3>眼妆推荐 <span class="subtitle">按匹配度排序</span></h3>
-              <div class="makeup-list" id="makeupList"></div>
-            </div>
           </div>
+        </div>
+
+        <!-- 下半：面部分析报告四列表 -->
+        <div class="card analysis-card">
+          <h3>面部分析报告</h3>
+          <div id="analysisTableWrap"></div>
         </div>
       </section>
     </main>

@@ -206,6 +206,22 @@ async function analyzeImageFile(file) {
       level: skinBrightness > 160 ? '明亮' : skinBrightness > 120 ? '适中' : '偏暗',
     },
     seed,
+    raw: {
+      eyeAspect:      Math.round(eyeAspect * 100) / 100,
+      faceAspect:     Math.round(faceAspect * 100) / 100,
+      lidFold:        Math.round(lidFold * 10) / 10,
+      skinBrightness: Math.round(skinBrightness),
+      skinWarmth:     Math.round(warmth * 1000) / 1000,
+      skinCoolness:   Math.round(coolness * 1000) / 1000,
+      eyeSaturation:  Math.round(eyeSaturation * 10) / 10,
+      contrast:       Math.round(contrast),
+      ageBase:        Math.round(ageBase),
+      beautyBase:     Math.round(beautyBase),
+      seedMod5:       seed % 5,
+      seedMod3:       (seed + 3) % 3,
+      seedMod5Eye:    (seed + 2) % 5,
+      seedMod4:       (seed + 1) % 4,
+    },
   };
 }
 

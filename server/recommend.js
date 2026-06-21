@@ -277,6 +277,41 @@ function buildReason(makeup, info) {
   return parts.length ? parts.join(' · ') : '综合型';
 }
 
+function buildAnalysisTable(info, summary, rawAnalysis) {
+  const imgF = rawAnalysis.imageFeatures || {};
+  const r = imgF.raw || {};
+
+  const rows = [
+    { inputField: 'portrait.gender',  rawValue: `seed%5=${r.seedMod5 ?? '-'}（哈希衍生）`,                      inputValue: `portrait.gender="${imgF.portrait?.gender ?? info.gender}"`,               reportLabel: '性别',     reportValue: summary['性别'] },
+    { inputField: 'portrait.age',     rawValue: `ageBase=${r.ageBase ?? '-'}（亮度校正前）`,                    inputValue: `portrait.age=${imgF.portrait?.age ?? info.age}`,                          reportLabel: '年龄',     reportValue: summary['年龄'] },
+    { inputField: 'portrait.emotion', rawValue: `(seed+3)%3=${r.seedMod3 ?? '-'}（哈希衍生）`,                  inputValue: `portrait.emotion="${imgF.portrait?.emotion ?? info.emotion}"`,             reportLabel: '情绪',     reportValue: summary['情绪'] },
+    { inputField: 'portrait.beauty',  rawValue: `beautyBase=${r.beautyBase ?? '-'}（对比度校正前）`,            inputValue: `portrait.beauty=${imgF.portrait?.beauty ?? info.beauty}`,                 reportLabel: '颜值评分', reportValue: String(summary['颜值评分']) },
+    { inputField: 'eyes.shape',       rawValue: `眼部宽高比=${r.eyeAspect ?? '-'}（像素计算）`,                inputValue: `eyes.shape="${imgF.eyes?.shape ?? info.eyeShape}"`,                       reportLabel: '眼型',     reportValue: summary['眼型'] },
+    { inputField: 'eyes.eyelid',      rawValue: `上睑亮度差=${r.lidFold ?? '-'}（像素差值）`,                  inputValue: `eyes.eyelid="${imgF.eyes?.eyelid ?? info.eyelid}"`,                       reportLabel: '眼皮',     reportValue: summary['眼皮'] },
+    { inputField: 'eyes.size',        rawValue: `眼部宽高比=${r.eyeAspect ?? '-'}（像素计算）`,                inputValue: `eyes.size="${imgF.eyes?.size ?? info.eyeSize}"`,                          reportLabel: '眼大小',   reportValue: summary['眼大小'] },
+    { inputField: 'eyebrow.shape',    rawValue: `(seed+2)%5=${r.seedMod5Eye ?? '-'}（哈希衍生）`,              inputValue: `eyebrow.shape="${imgF.eyebrow?.shape ?? info.eyebrowShape}"`,             reportLabel: '眉形',     reportValue: summary['眉形'] },
+    { inputField: 'face.shape',       rawValue: `脸部宽高比=${r.faceAspect ?? '-'}（像素计算）`,               inputValue: `face.shape="${imgF.face?.shape ?? info.faceShape}"`,                      reportLabel: '脸型',     reportValue: summary['脸型'] },
+    { inputField: 'skin.tone',        rawValue: `warmth=(R-B)/255=${r.skinWarmth ?? '-'}`,                     inputValue: `skin.tone="${imgF.skin?.tone ?? info.skinTone}"`,                         reportLabel: '肤色基调', reportValue: summary['肤色基调'] },
+    { inputField: 'skin.shade',       rawValue: `人脸区亮度均值=${r.skinBrightness ?? '-'}`,                    inputValue: `skin.shade="${imgF.skin?.shade ?? info.skinShade}"`,                      reportLabel: '肤色深浅', reportValue: summary['肤色深浅'] },
+    { inputField: 'skin.type',        rawValue: `(seed+1)%4=${r.seedMod4 ?? '-'}（哈希衍生）`,                 inputValue: `skin.type="${imgF.skin?.type ?? info.skinType}"`,                         reportLabel: '肤质',     reportValue: summary['肤质'] },
+    { inputField: 'lighting.level',   rawValue: `亮度均值=${r.skinBrightness ?? '-'}，对比度=${r.contrast ?? '-'}`, inputValue: `lighting.level="${imgF.lighting?.level ?? info.lighting}"`,          reportLabel: '光线环境', reportValue: summary['光线环境'] },
+    { inputField: 'eyes.hasMakeup',   rawValue: `眼部饱和差=(R+G)/2-B=${r.eyeSaturation ?? '-'}`,             inputValue: `eyes.hasMakeup=${imgF.eyes?.hasMakeup ?? (info.currentMakeup.eye > 0)}`, reportLabel: '当前眼妆', reportValue: summary['当前眼妆'] },
+  ];
+
+  const rgb = imgF.skin?.rgb || info.skinRgb;
+  if (rgb) {
+    rows.push({
+      inputField: 'skin.rgb',
+      rawValue: `人脸区RGB均值`,
+      inputValue: `skin.rgb={r:${rgb.r}, g:${rgb.g}, b:${rgb.b}}`,
+      reportLabel: '肤色采样',
+      reportValue: summary['肤色采样'] || `RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`,
+    });
+  }
+
+  return rows;
+}
+
 export function generateRecommendations(rawAnalysis) {
   const info = extractFaceInfo(rawAnalysis);
 
@@ -287,10 +322,12 @@ export function generateRecommendations(rawAnalysis) {
   })).sort((a, b) => b.matchScore - a.matchScore);
 
   const top = ranked[0];
+  const summary = buildAnalysisSummary(info);
 
   return {
     faceInfo: info,
-    summary: buildAnalysisSummary(info),
+    summary,
+    analysisTable: buildAnalysisTable(info, summary, rawAnalysis),
     recommendations: ranked.slice(0, 5),
     allStyles: ranked,
     tips: buildTips(info, top, ranked),
